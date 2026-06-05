@@ -40,5 +40,13 @@
   "devDependencies": {
     "@types/node": "^25.9.1",
     "typescript": "^6.0.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rogerchappel/smokegrid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/smokegrid/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/smokegrid#readme"
 }
