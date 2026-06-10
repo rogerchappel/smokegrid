@@ -24,6 +24,14 @@ Start with the built CLI help so the examples match the checked-out version:
 ```sh
 node dist/cli.js --help
 ```
+
+For a copy-pasteable demo that builds the CLI and captures the current entry
+point output as an artifact, run:
+
+```sh
+bash examples/current-cli-demo.sh
+```
+
 Run the maintained smoke fixture to exercise the main workflow end to end:
 
 ```sh
