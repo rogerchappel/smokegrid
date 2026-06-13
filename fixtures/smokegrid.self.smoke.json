@@ -1,0 +1,33 @@
+{
+  "name": "smokegrid self smoke",
+  "description": "Exercises the built CLI against stable Node commands.",
+  "timeoutMs": 5000,
+  "cases": [
+    {
+      "name": "version prints package version",
+      "command": "node",
+      "args": ["../dist/cli.js", "--version"],
+      "expect": {
+        "exit": 0,
+        "stdout": {
+          "kind": "exact",
+          "value": "0.1.0\n"
+        },
+        "stderr": {
+          "kind": "exact",
+          "value": ""
+        }
+      }
+    },
+    {
+      "name": "stdin is forwarded to child commands",
+      "command": "node",
+      "args": ["-e", "process.stdin.pipe(process.stdout)"],
+      "stdin": "fixture input\n",
+      "expect": {
+        "exit": 0,
+        "stdout": "fixture input"
+      }
+    }
+  ]
+}

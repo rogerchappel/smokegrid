@@ -26,7 +26,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test",
+    "test": "npm run build && node --test test/*.test.js",
     "smoke": "node dist/cli.js run fixtures/smokegrid.self.smoke.json",
     "package:smoke": "npm pack --dry-run",
     "release:check": "npm run check && npm test && npm run build && npm run smoke && npm run package:smoke"
