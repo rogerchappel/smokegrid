@@ -41,8 +41,18 @@ npm run smoke
 The smoke command currently expands to:
 
 ```sh
-node dist/cli.js run fixtures/smokegrid.self.smoke.json
+npm run build && node dist/cli.js run fixtures/smokegrid.self.smoke.json
 ```
+
+You can run any JSON scenario directly:
+
+```sh
+node dist/cli.js run fixtures/smokegrid.self.smoke.json --json
+```
+
+Scenarios contain one or more cases with a command, optional args/stdin/env, and
+exit/stdout/stderr expectations. The built-in fixture covers version output and
+stdin forwarding so release checks prove the runner path is working.
 ## Verification
 
 ```sh
