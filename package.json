@@ -52,5 +52,8 @@
   "bugs": {
     "url": "https://github.com/rogerchappel/smokegrid/issues"
   },
-  "homepage": "https://github.com/rogerchappel/smokegrid#readme"
+  "homepage": "https://github.com/rogerchappel/smokegrid#readme",
+  "engines": {
+    "node": ">=20"
+  }
 }
