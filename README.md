@@ -50,6 +50,13 @@ You can run any JSON scenario directly:
 node dist/cli.js run fixtures/smokegrid.self.smoke.json --json
 ```
 
+For a reusable JSON-report demo that builds the CLI, writes a report to a
+temporary directory, and validates the report shape, run:
+
+```sh
+bash examples/json-report-demo.sh
+```
+
 Scenarios contain one or more cases with a command, optional args/stdin/env, and
 exit/stdout/stderr expectations. The built-in fixture covers version output and
 stdin forwarding so release checks prove the runner path is working.
