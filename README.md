@@ -32,6 +32,12 @@ point output as an artifact, run:
 bash examples/current-cli-demo.sh
 ```
 
+For a JSON-report demo suitable for a CI evidence artifact, run:
+
+```sh
+bash demo/ci-json-report.sh
+```
+
 Run the maintained smoke fixture to exercise the main workflow end to end:
 
 ```sh
@@ -60,6 +66,9 @@ bash examples/json-report-demo.sh
 Scenarios contain one or more cases with a command, optional args/stdin/env, and
 exit/stdout/stderr expectations. The built-in fixture covers version output and
 stdin forwarding so release checks prove the runner path is working.
+
+For a short promotion outline grounded in this fixture, see
+[`docs/promo/video-brief.md`](docs/promo/video-brief.md).
 ## Verification
 
 ```sh
