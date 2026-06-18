@@ -85,6 +85,20 @@ npm run release:check
 - Output schemas and CLI flags may change before a stable 1.0 release.
 - Review generated files before committing them, especially when they summarize logs, diffs, or dependency metadata.
 
+## Release readiness
+
+Before opening a release PR, run the package checks that exercise the build, tests, smoke path, and pack manifest:
+
+```sh
+npm run check
+npm test
+npm run smoke
+npm run package:smoke
+npm run release:check
+```
+
+The package metadata points at the public GitHub repository so npm and generated provenance link back to the source.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes small, include a fixture or smoke case when behavior changes, and paste verification output into the pull request.
