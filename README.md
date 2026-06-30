@@ -17,7 +17,7 @@ cd smokegrid
 npm install
 npm run build
 ```
-## CLI quickstart
+## Quickstart
 
 Start with the built CLI help so the examples match the checked-out version:
 
@@ -38,7 +38,7 @@ For a JSON-report demo suitable for a CI evidence artifact, run:
 bash demo/ci-json-report.sh
 ```
 
-Run the maintained smoke fixture to exercise the main workflow end to end:
+To exercise the maintained fixture end to end, run:
 
 ```sh
 npm run smoke
