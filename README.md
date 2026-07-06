@@ -97,7 +97,7 @@ npm run package:smoke
 npm run release:check
 ```
 
-The package metadata points at the public GitHub repository so npm and generated provenance link back to the source.
+The package smoke fails if the CLI, library entrypoint, type declarations, self-smoke fixture, or support docs would be missing from the published tarball.
 
 ## Contributing
 
