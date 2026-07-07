@@ -17,7 +17,7 @@ cd smokegrid
 npm install
 npm run build
 ```
-## CLI quickstart
+## Quickstart
 
 Start with the built CLI help so the examples match the checked-out version:
 
@@ -41,7 +41,13 @@ bash demo/report-json-demo.sh
 See [JSON Report Demo](docs/tutorials/json-report-demo.md) for the report
 contents and PR handoff angle.
 
-Run the maintained smoke fixture to exercise the main workflow end to end:
+For a JSON-report demo suitable for a CI evidence artifact, run:
+
+```sh
+bash demo/ci-json-report.sh
+```
+
+To exercise the maintained fixture end to end, run:
 
 ```sh
 npm run smoke
@@ -59,9 +65,19 @@ You can run any JSON scenario directly:
 node dist/cli.js run fixtures/smokegrid.self.smoke.json --json
 ```
 
+For a reusable JSON-report demo that builds the CLI, writes a report to a
+temporary directory, and validates the report shape, run:
+
+```sh
+bash examples/json-report-demo.sh
+```
+
 Scenarios contain one or more cases with a command, optional args/stdin/env, and
 exit/stdout/stderr expectations. The built-in fixture covers version output and
 stdin forwarding so release checks prove the runner path is working.
+
+For a short promotion outline grounded in this fixture, see
+[`docs/promo/video-brief.md`](docs/promo/video-brief.md).
 ## Verification
 
 ```sh
@@ -77,6 +93,20 @@ npm run release:check
 - The project is intentionally local-first; it does not manage remote credentials or upload repository contents.
 - Output schemas and CLI flags may change before a stable 1.0 release.
 - Review generated files before committing them, especially when they summarize logs, diffs, or dependency metadata.
+
+## Release readiness
+
+Before opening a release PR, run the package checks that exercise the build, tests, smoke path, and pack manifest:
+
+```sh
+npm run check
+npm test
+npm run smoke
+npm run package:smoke
+npm run release:check
+```
+
+The package smoke fails if the CLI, library entrypoint, type declarations, self-smoke fixture, or support docs would be missing from the published tarball.
 
 ## Contributing
 
