@@ -32,6 +32,15 @@ point output as an artifact, run:
 bash examples/current-cli-demo.sh
 ```
 
+To generate a machine-readable smoke report from the checked-in fixture, run:
+
+```sh
+bash demo/report-json-demo.sh
+```
+
+See [JSON Report Demo](docs/tutorials/json-report-demo.md) for the report
+contents and PR handoff angle.
+
 Run the maintained smoke fixture to exercise the main workflow end to end:
 
 ```sh
