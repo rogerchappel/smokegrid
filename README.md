@@ -106,7 +106,9 @@ npm run package:smoke
 npm run release:check
 ```
 
-The package smoke fails if the CLI, library entrypoint, type declarations, self-smoke fixture, or support docs would be missing from the published tarball.
+The package smoke fails if the CLI, library entrypoint, type declarations,
+self-smoke fixture, tutorials, agent guidance, code of conduct, or support docs
+would be missing from the published tarball.
 
 ## Contributing
 
