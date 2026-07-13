@@ -11,6 +11,10 @@ const requiredFiles = [
   "SECURITY.md",
   "CHANGELOG.md",
   "CONTRIBUTING.md",
+  "CODE_OF_CONDUCT.md",
+  "AGENTS.md",
+  "docs/README.md",
+  "docs/tutorials/json-report-demo.md",
 ];
 
 const output = execFileSync("npm", ["pack", "--dry-run", "--json"], {
