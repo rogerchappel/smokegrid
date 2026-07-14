@@ -1,0 +1,45 @@
+{
+  "name": "CLI release sanity check",
+  "description": "Verifies the public CLI entrypoint before a release.",
+  "timeoutMs": 5000,
+  "cases": [
+    {
+      "name": "version exits cleanly",
+      "command": "node",
+      "args": ["../dist/cli.js", "--version"],
+      "expect": {
+        "exit": 0,
+        "stdout": {
+          "kind": "contains",
+          "value": "0.1.0"
+        },
+        "stderr": {
+          "kind": "exact",
+          "value": ""
+        }
+      }
+    },
+    {
+      "name": "help lists run command",
+      "command": "node",
+      "args": ["../dist/cli.js", "--help"],
+      "expect": {
+        "exit": 0,
+        "stdout": {
+          "kind": "contains",
+          "value": "smokegrid run <scenario.json>"
+        }
+      }
+    },
+    {
+      "name": "stdin reaches child command",
+      "command": "node",
+      "args": ["-e", "process.stdin.pipe(process.stdout)"],
+      "stdin": "release note draft\n",
+      "expect": {
+        "exit": 0,
+        "stdout": "release note draft"
+      }
+    }
+  ]
+}

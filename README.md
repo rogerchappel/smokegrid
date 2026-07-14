@@ -53,6 +53,15 @@ node dist/cli.js run fixtures/smokegrid.self.smoke.json --json
 Scenarios contain one or more cases with a command, optional args/stdin/env, and
 exit/stdout/stderr expectations. The built-in fixture covers version output and
 stdin forwarding so release checks prove the runner path is working.
+
+## Demo Recipes
+
+- [Check a CLI release scenario](docs/tutorials/check-cli-release-scenario.md)
+  adds a three-case fixture for version, help text, and stdin forwarding.
+- `bash demo/cli-release-scenario.sh` builds the CLI, runs the release scenario,
+  and writes a JSON report to `/tmp/smokegrid-cli-release-report.json`.
+- [Video brief: CLI release checks](docs/promo/video-brief-cli-release.md)
+  outlines a grounded walkthrough for demos or social clips.
 ## Verification
 
 ```sh
