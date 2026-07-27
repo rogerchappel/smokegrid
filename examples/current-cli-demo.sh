@@ -8,7 +8,9 @@ report_file="${report_dir}/current-cli-demo.txt"
 cd "$repo_root"
 mkdir -p "$report_dir"
 
-npm run build >/dev/null
+if [[ ! -f dist/cli.js ]]; then
+  npm run build >/dev/null
+fi
 
 {
   printf 'smokegrid current CLI demo\n'

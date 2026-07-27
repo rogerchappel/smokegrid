@@ -8,7 +8,9 @@ report_file="${out_dir}/smokegrid-self-report.json"
 cd "$repo_root"
 mkdir -p "$out_dir"
 
-npm run build >/dev/null
+if [[ ! -f dist/cli.js ]]; then
+  npm run build >/dev/null
+fi
 
 node dist/cli.js run fixtures/smokegrid.self.smoke.json --json >"$report_file"
 
