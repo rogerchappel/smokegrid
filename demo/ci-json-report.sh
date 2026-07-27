@@ -8,7 +8,9 @@ rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 
 cd "$ROOT_DIR"
-npm run build
+if [[ ! -f dist/cli.js ]]; then
+  npm run build
+fi
 
 node dist/cli.js run fixtures/smokegrid.self.smoke.json --json > "$OUT_DIR/smokegrid-report.json"
 

@@ -16,7 +16,9 @@
   },
   "files": [
     "dist",
+    "demo",
     "docs",
+    "examples",
     "fixtures",
     "AGENTS.md",
     "README.md",
