@@ -76,6 +76,13 @@ Scenarios contain one or more cases with a command, optional args/stdin/env, and
 exit/stdout/stderr expectations. The built-in fixture covers version output and
 stdin forwarding so release checks prove the runner path is working.
 
+`timeoutMs`, when set on the scenario or an individual case, must be a finite
+number greater than zero. A case-level value overrides the scenario default.
+Regex output expectations use JavaScript Unicode regular-expression syntax:
+`{ "kind": "regex", "value": "^ready\\s+\\d+$" }`. Smokegrid validates these
+fields before starting any scenario command, so invalid fixtures fail without
+partial execution.
+
 ## Demo Recipes
 
 - [Check a CLI release scenario](docs/tutorials/check-cli-release-scenario.md)

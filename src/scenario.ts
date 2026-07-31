@@ -42,7 +42,7 @@ function validateScenario(value: unknown, scenarioPath: string): asserts value i
   optionalString(value, "description", scenarioPath);
   optionalString(value, "cwd", scenarioPath);
   optionalStringMap(value, "env", scenarioPath);
-  optionalNumber(value, "timeoutMs", scenarioPath);
+  optionalPositiveNumber(value, "timeoutMs", scenarioPath);
 
   if (!Array.isArray(value.cases) || value.cases.length === 0) {
     throw new ScenarioError("cases must be a non-empty array", scenarioPath);
@@ -61,7 +61,7 @@ function validateCase(value: unknown, index: number, scenarioPath: string): asse
   optionalString(value, "cwd", scenarioPath, `cases[${index}]`);
   optionalStringMap(value, "env", scenarioPath, `cases[${index}]`);
   optionalString(value, "stdin", scenarioPath, `cases[${index}]`);
-  optionalNumber(value, "timeoutMs", scenarioPath, `cases[${index}]`);
+  optionalPositiveNumber(value, "timeoutMs", scenarioPath, `cases[${index}]`);
 
   if (value.args !== undefined && (!Array.isArray(value.args) || !value.args.every((item) => typeof item === "string"))) {
     throw new ScenarioError(`cases[${index}].args must be an array of strings`, scenarioPath);
@@ -93,9 +93,19 @@ function validateOutput(value: unknown, location: string, scenarioPath: string):
   }
 
   const values = Array.isArray(value) ? value : [value];
-  for (const expectation of values) {
+  for (const [index, expectation] of values.entries()) {
+    const expectationLocation = Array.isArray(value) ? `${location}[${index}]` : location;
     if (!isOutputExpectation(expectation)) {
       throw new ScenarioError(`${location} must be a string or output expectation`, scenarioPath);
+    }
+
+    if (typeof expectation !== "string" && expectation.kind === "regex") {
+      try {
+        new RegExp(expectation.value, "u");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new ScenarioError(`${expectationLocation}.value must be a valid regular expression: ${message}`, scenarioPath);
+      }
     }
   }
 }
@@ -120,9 +130,9 @@ function optionalString(value: Record<string, unknown>, key: string, scenarioPat
   }
 }
 
-function optionalNumber(value: Record<string, unknown>, key: string, scenarioPath: string, location = "scenario"): void {
-  if (value[key] !== undefined && typeof value[key] !== "number") {
-    throw new ScenarioError(`${location}.${key} must be a number`, scenarioPath);
+function optionalPositiveNumber(value: Record<string, unknown>, key: string, scenarioPath: string, location = "scenario"): void {
+  if (value[key] !== undefined && (typeof value[key] !== "number" || !Number.isFinite(value[key]) || value[key] <= 0)) {
+    throw new ScenarioError(`${location}.${key} must be a finite positive number`, scenarioPath);
   }
 }
 

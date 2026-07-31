@@ -81,6 +81,11 @@ node dist/cli.js run examples/cli-release.smoke.json --json > smokegrid-report.j
 ## Review checklist
 
 - Keep scenario commands deterministic and local.
+- Set `timeoutMs` to a finite number greater than zero. A timeout on a case
+  overrides the scenario-level timeout for that case.
+- Write `{ "kind": "regex", "value": "..." }` expectations using valid
+  JavaScript Unicode regular-expression syntax. Scenario validation checks all
+  regex values before it starts the first command.
 - Prefer short commands that fail for one clear reason.
 - Store generated reports outside the fixture file so the scenario remains
   reviewable in code review.
