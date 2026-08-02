@@ -78,6 +78,26 @@ stdin forwarding so release checks prove the runner path is working.
 
 `timeoutMs`, when set on the scenario or an individual case, must be a finite
 number greater than zero. A case-level value overrides the scenario default.
+When a case reaches its timeout, Smokegrid sends `SIGTERM` and allows a 100ms
+grace period for cleanup. If the command is still running, Smokegrid uses
+`SIGKILL` where the platform supports it, then reports the case as `timedOut`.
+This keeps timeout completion bounded even when a command ignores `SIGTERM`.
+
+For example, this case is reported as timed out instead of waiting five
+seconds for the command's timer:
+
+```json
+{
+  "name": "bounded timeout",
+  "cases": [{
+    "name": "slow command",
+    "command": "node",
+    "args": ["-e", "setTimeout(() => {}, 5000)"],
+    "timeoutMs": 50
+  }]
+}
+```
+
 Regex output expectations use JavaScript Unicode regular-expression syntax:
 `{ "kind": "regex", "value": "^ready\\s+\\d+$" }`. Smokegrid validates these
 fields before starting any scenario command, so invalid fixtures fail without
