@@ -117,6 +117,49 @@ test("runScenarios accepts valid regex and case-level timeout overrides", async 
   assert.equal(report.scenarios[0].cases[0].timedOut, false);
 });
 
+test("runScenarios reports a normally terminated timed-out command", async () => {
+  const scenarioPath = await writeScenario("normal-timeout", {
+    cases: [{
+      name: "times out",
+      command: "node",
+      args: ["-e", "setTimeout(() => {}, 5_000)"],
+      timeoutMs: 25
+    }]
+  });
+
+  const report = await runScenarios([scenarioPath]);
+  const result = report.scenarios[0].cases[0];
+
+  assert.equal(report.passed, false);
+  assert.equal(result.timedOut, true);
+  assert.equal(result.signal, "SIGTERM");
+  assert.match(result.assertions[0].message, /timed out after 25ms/);
+  assert.ok(result.durationMs < 1_000, `timeout took ${result.durationMs}ms`);
+});
+
+test("runScenarios forcefully stops a command that ignores SIGTERM", { skip: process.platform === "win32" }, async () => {
+  const scenarioPath = await writeScenario("resisting-timeout", {
+    cases: [{
+      name: "resists SIGTERM",
+      command: "node",
+      args: ["-e", "process.on('SIGTERM', () => {}); console.log(process.pid); setTimeout(() => {}, 5_000)"],
+      timeoutMs: 25
+    }]
+  });
+
+  const startedAt = Date.now();
+  const report = await runScenarios([scenarioPath]);
+  const elapsedMs = Date.now() - startedAt;
+  const result = report.scenarios[0].cases[0];
+  const pid = Number.parseInt(result.stdout, 10);
+
+  assert.equal(report.passed, false);
+  assert.equal(result.timedOut, true);
+  assert.equal(result.signal, "SIGKILL");
+  assert.ok(elapsedMs < 1_000, `timeout took ${elapsedMs}ms`);
+  assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
+});
+
 async function writeScenario(name, scenario) {
   const dir = new URL(`${name}/`, tmpRoot);
   await rm(dir, { force: true, recursive: true });
