@@ -138,12 +138,14 @@ test("runScenarios reports a normally terminated timed-out command", async () =>
 });
 
 test("runScenarios forcefully stops a command that ignores SIGTERM", { skip: process.platform === "win32" }, async () => {
+  const readyMarker = "ready-to-resist";
   const scenarioPath = await writeScenario("resisting-timeout", {
     cases: [{
       name: "resists SIGTERM",
       command: "node",
-      args: ["-e", "process.on('SIGTERM', () => {}); console.log(process.pid); setTimeout(() => {}, 5_000)"],
-      timeoutMs: 25
+      args: ["-e", `process.on('SIGTERM', () => {}); console.log('${readyMarker}', process.pid); setTimeout(() => {}, 5_000)`],
+      // Leave enough time for Node to start and print after installing the handler.
+      timeoutMs: 500
     }]
   });
 
@@ -151,12 +153,14 @@ test("runScenarios forcefully stops a command that ignores SIGTERM", { skip: pro
   const report = await runScenarios([scenarioPath]);
   const elapsedMs = Date.now() - startedAt;
   const result = report.scenarios[0].cases[0];
-  const pid = Number.parseInt(result.stdout, 10);
+  const readyMatch = result.stdout.match(new RegExp(`^${readyMarker} (\\d+)\\n$`));
 
   assert.equal(report.passed, false);
   assert.equal(result.timedOut, true);
   assert.equal(result.signal, "SIGKILL");
-  assert.ok(elapsedMs < 1_000, `timeout took ${elapsedMs}ms`);
+  assert.ok(readyMatch, `child did not signal readiness: ${JSON.stringify(result.stdout)}`);
+  assert.ok(elapsedMs < 1_500, `timeout took ${elapsedMs}ms`);
+  const pid = Number.parseInt(readyMatch[1], 10);
   assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
 });
 

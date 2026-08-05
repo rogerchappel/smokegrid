@@ -12,8 +12,12 @@ permissions:
 
 jobs:
   repository-hygiene:
-    name: Repository hygiene
-    runs-on: ubuntu-latest
+    name: Repository hygiene (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Check out repository
@@ -64,3 +68,9 @@ jobs:
           fi
 
           npm run release:check
+
+      - name: Repeat force-kill regression
+        run: |
+          for run in {1..10}; do
+            node --test --test-name-pattern="forcefully stops" test/runner.test.js
+          done
