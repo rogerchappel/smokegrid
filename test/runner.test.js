@@ -164,6 +164,39 @@ test("runScenarios forcefully stops a command that ignores SIGTERM", { skip: pro
   assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
 });
 
+test("runScenarios forcefully stops descendants that inherit stdio", { skip: process.platform === "win32" }, async () => {
+  const readyMarker = "descendant-ready";
+  const descendantScript = `process.on('SIGTERM', () => {}); console.log('${readyMarker}', process.pid); setTimeout(() => {}, 5_000)`;
+  const parentScript = `
+    const { spawn } = require('node:child_process');
+    process.on('SIGTERM', () => {});
+    spawn(process.execPath, ['-e', ${JSON.stringify(descendantScript)}], { stdio: 'inherit' });
+    setTimeout(() => {}, 5_000);
+  `;
+  const scenarioPath = await writeScenario("descendant-timeout", {
+    cases: [{
+      name: "descendant resists SIGTERM",
+      command: "node",
+      args: ["-e", parentScript],
+      timeoutMs: 500
+    }]
+  });
+
+  const startedAt = Date.now();
+  const report = await runScenarios([scenarioPath]);
+  const elapsedMs = Date.now() - startedAt;
+  const result = report.scenarios[0].cases[0];
+  const readyMatch = result.stdout.match(new RegExp(`^${readyMarker} (\\d+)\\n$`));
+
+  assert.equal(report.passed, false);
+  assert.equal(result.timedOut, true);
+  assert.equal(result.signal, "SIGKILL");
+  assert.ok(readyMatch, `descendant did not signal readiness: ${JSON.stringify(result.stdout)}`);
+  assert.ok(elapsedMs < 1_500, `timeout took ${elapsedMs}ms`);
+  const pid = Number.parseInt(readyMatch[1], 10);
+  assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
+});
+
 async function writeScenario(name, scenario) {
   const dir = new URL(`${name}/`, tmpRoot);
   await rm(dir, { force: true, recursive: true });
