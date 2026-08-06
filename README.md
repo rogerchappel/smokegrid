@@ -79,9 +79,11 @@ stdin forwarding so release checks prove the runner path is working.
 `timeoutMs`, when set on the scenario or an individual case, must be a finite
 number greater than zero. A case-level value overrides the scenario default.
 When a case reaches its timeout, Smokegrid sends `SIGTERM` and allows a 100ms
-grace period for cleanup. If the command is still running, Smokegrid uses
-`SIGKILL` where the platform supports it, then reports the case as `timedOut`.
-This keeps timeout completion bounded even when a command ignores `SIGTERM`.
+grace period for cleanup. On Linux and macOS, the signal targets the command's
+whole process group; Smokegrid then sends `SIGKILL` to that group so inherited
+stdio from a resistant descendant cannot keep the run open. Windows does not
+provide this process-group signaling model, so timeout cleanup there is limited
+to the direct child. In either case, Smokegrid reports the case as `timedOut`.
 
 For example, this case is reported as timed out instead of waiting five
 seconds for the command's timer:

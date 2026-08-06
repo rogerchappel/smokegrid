@@ -4,6 +4,21 @@ import { performance } from "node:perf_hooks";
 import type { CaseExecution, SmokeCase } from "./types.js";
 
 const FORCE_KILL_GRACE_MS = 100;
+const SUPPORTS_PROCESS_GROUPS = process.platform !== "win32";
+
+function killCommand(child: ReturnType<typeof spawn>, signal: NodeJS.Signals): void {
+  try {
+    if (SUPPORTS_PROCESS_GROUPS && child.pid !== undefined) {
+      process.kill(-child.pid, signal);
+    } else {
+      child.kill(signal);
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ESRCH") {
+      throw error;
+    }
+  }
+}
 
 export function executeCase(smokeCase: SmokeCase, cwd: string, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<CaseExecution> {
   return new Promise((resolve) => {
@@ -11,6 +26,7 @@ export function executeCase(smokeCase: SmokeCase, cwd: string, env: NodeJS.Proce
     const child = spawn(smokeCase.command, smokeCase.args ?? [], {
       cwd,
       env,
+      detached: SUPPORTS_PROCESS_GROUPS,
       shell: false,
       stdio: ["pipe", "pipe", "pipe"]
     });
@@ -26,12 +42,12 @@ export function executeCase(smokeCase: SmokeCase, cwd: string, env: NodeJS.Proce
       }
 
       timedOut = true;
-      child.kill("SIGTERM");
+      killCommand(child, "SIGTERM");
 
       forceKillTimeout = setTimeout(() => {
-        if (child.exitCode === null && child.signalCode === null) {
-          child.kill("SIGKILL");
-        }
+        // The direct child may have exited while a descendant still holds its
+        // inherited stdio open, so always address the whole process group.
+        killCommand(child, "SIGKILL");
       }, FORCE_KILL_GRACE_MS);
     }, timeoutMs);
 
