@@ -165,11 +165,12 @@ test("runScenarios forcefully stops a command that ignores SIGTERM", { skip: pro
 });
 
 test("runScenarios forcefully stops descendants that inherit stdio", { skip: process.platform === "win32" }, async () => {
+  const parentMarker = "parent-ready";
   const readyMarker = "descendant-ready";
   const descendantScript = `process.on('SIGTERM', () => {}); console.log('${readyMarker}', process.pid); setTimeout(() => {}, 5_000)`;
   const parentScript = `
     const { spawn } = require('node:child_process');
-    process.on('SIGTERM', () => {});
+    console.log('${parentMarker}', process.pid);
     spawn(process.execPath, ['-e', ${JSON.stringify(descendantScript)}], { stdio: 'inherit' });
     setTimeout(() => {}, 5_000);
   `;
@@ -186,15 +187,19 @@ test("runScenarios forcefully stops descendants that inherit stdio", { skip: pro
   const report = await runScenarios([scenarioPath]);
   const elapsedMs = Date.now() - startedAt;
   const result = report.scenarios[0].cases[0];
-  const readyMatch = result.stdout.match(new RegExp(`^${readyMarker} (\\d+)\\n$`));
+  const parentMatch = result.stdout.match(new RegExp(`^${parentMarker} (\\d+)$`, "m"));
+  const readyMatch = result.stdout.match(new RegExp(`^${readyMarker} (\\d+)$`, "m"));
 
   assert.equal(report.passed, false);
   assert.equal(result.timedOut, true);
-  assert.equal(result.signal, "SIGKILL");
+  assert.equal(result.signal, "SIGTERM");
+  assert.ok(parentMatch, `parent did not signal readiness: ${JSON.stringify(result.stdout)}`);
   assert.ok(readyMatch, `descendant did not signal readiness: ${JSON.stringify(result.stdout)}`);
   assert.ok(elapsedMs < 1_500, `timeout took ${elapsedMs}ms`);
-  const pid = Number.parseInt(readyMatch[1], 10);
-  assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
+  const parentPid = Number.parseInt(parentMatch[1], 10);
+  const descendantPid = Number.parseInt(readyMatch[1], 10);
+  assert.throws(() => process.kill(parentPid, 0), { code: "ESRCH" });
+  assert.throws(() => process.kill(descendantPid, 0), { code: "ESRCH" });
 });
 
 async function writeScenario(name, scenario) {
