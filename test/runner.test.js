@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
 
@@ -167,7 +167,14 @@ test("runScenarios forcefully stops a command that ignores SIGTERM", { skip: pro
 test("runScenarios forcefully stops descendants that inherit stdio", { skip: process.platform === "win32" }, async () => {
   const parentMarker = "parent-ready";
   const readyMarker = "descendant-ready";
-  const descendantScript = `process.on('SIGTERM', () => {}); console.log('${readyMarker}', process.pid); setTimeout(() => {}, 5_000)`;
+  const heartbeatPath = join(new URL("descendant-timeout/", tmpRoot).pathname, "descendant-heartbeat");
+  const descendantScript = `
+    const { appendFileSync } = require('node:fs');
+    process.on('SIGTERM', () => {});
+    appendFileSync(${JSON.stringify(heartbeatPath)}, '.');
+    console.log('${readyMarker}', process.pid);
+    setInterval(() => appendFileSync(${JSON.stringify(heartbeatPath)}, '.'), 20);
+  `;
   const parentScript = `
     const { spawn } = require('node:child_process');
     console.log('${parentMarker}', process.pid);
@@ -187,19 +194,22 @@ test("runScenarios forcefully stops descendants that inherit stdio", { skip: pro
   const report = await runScenarios([scenarioPath]);
   const elapsedMs = Date.now() - startedAt;
   const result = report.scenarios[0].cases[0];
-  const parentMatch = result.stdout.match(new RegExp(`^${parentMarker} (\\d+)$`, "m"));
   const readyMatch = result.stdout.match(new RegExp(`^${readyMarker} (\\d+)$`, "m"));
 
   assert.equal(report.passed, false);
   assert.equal(result.timedOut, true);
   assert.equal(result.signal, "SIGTERM");
-  assert.ok(parentMatch, `parent did not signal readiness: ${JSON.stringify(result.stdout)}`);
+  assert.match(result.stdout, new RegExp(`^${parentMarker} \\d+$`, "m"));
   assert.ok(readyMatch, `descendant did not signal readiness: ${JSON.stringify(result.stdout)}`);
   assert.ok(elapsedMs < 1_500, `timeout took ${elapsedMs}ms`);
-  const parentPid = Number.parseInt(parentMatch[1], 10);
-  const descendantPid = Number.parseInt(readyMatch[1], 10);
-  assert.throws(() => process.kill(parentPid, 0), { code: "ESRCH" });
-  assert.throws(() => process.kill(descendantPid, 0), { code: "ESRCH" });
+  const heartbeatAtResolution = await readFile(heartbeatPath, "utf8");
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  const heartbeatAfterObservation = await readFile(heartbeatPath, "utf8");
+  assert.equal(
+    heartbeatAfterObservation,
+    heartbeatAtResolution,
+    "descendant continued running after runScenarios resolved"
+  );
 });
 
 async function writeScenario(name, scenario) {
