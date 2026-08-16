@@ -65,6 +65,10 @@ You can run any JSON scenario directly:
 node dist/cli.js run fixtures/smokegrid.self.smoke.json --json
 ```
 
+Help (`--help` or `-h`) and version (`--version` or `-v`) are top-level
+commands and must be used on their own. After `run`, only the run options shown
+in the CLI usage are accepted.
+
 For a reusable JSON-report demo that builds the CLI, writes a report to a
 temporary directory, and validates the report shape, run:
 
