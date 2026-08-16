@@ -5,12 +5,12 @@ import { formatReport, runScenarios, version } from "./index.js";
 const args = process.argv.slice(2);
 
 async function main(argv: string[]): Promise<number> {
-  if (argv.includes("--version") || argv.includes("-v")) {
+  if (argv.length === 1 && (argv[0] === "--version" || argv[0] === "-v")) {
     console.log(version);
     return 0;
   }
 
-  if (argv.length === 0 || argv.includes("--help") || argv.includes("-h")) {
+  if (argv.length === 0 || (argv.length === 1 && (argv[0] === "--help" || argv[0] === "-h"))) {
     process.stdout.write(helpText());
     return argv.length === 0 ? 1 : 0;
   }
@@ -58,7 +58,10 @@ Fixture-backed CLI smoke test runner for developer tools.
 
 Usage:
   smokegrid run <scenario.json> [more-scenarios.json] [--json] [--fail-fast]
-  smokegrid --version
+  smokegrid --help | -h
+  smokegrid --version | -v
+
+Help and version flags must be used on their own.
 `;
 }
 
