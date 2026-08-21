@@ -64,6 +64,11 @@ Next recommended task:
 
 Every contribution should include verification.
 
+CI installs dependencies and runs the complete `npm run release:check` suite on
+Node.js 20 (the minimum version in `package.json`) and Node.js 24 on both Linux
+and macOS. Run the suite locally on a supported Node.js version before opening a
+pull request.
+
 Examples:
 
 - Documentation: inspect rendered Markdown or review the diff.
